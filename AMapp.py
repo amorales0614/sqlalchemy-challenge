@@ -1,6 +1,3 @@
-# `/api/v1.0/tobs`
-  # Query the dates and temperature observations of the most active station for the last year of data.
-  # Return a JSON list of temperature observations (TOBS) for the previous year.
 # `/api/v1.0/<start>` and `/api/v1.0/<start>/<end>`
   # Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
   # When given the start only, calculate `TMIN`, `TAVG`, and `TMAX` for all dates greater than and equal to the start date.
@@ -84,7 +81,7 @@ def tobs():
 
 	first_date = (dt.datetime.strptime(most_recent[0],'%Y-%m-%d') - dt.timedelta(days=365)).strftime('%Y-%m-%d')
 
-	results = session.query(msmt.date, msmt.tobs).filter(msmt.date >= first_date).order_by(msmt.date).all()
+	results = session.query(msmt.date, msmt.tobs).filter(msmt.date >= first_date).order_by(msmt.date).filter(msmt.station == 'USC00519281').all()
 
 	t_list = []
 
@@ -96,6 +93,8 @@ def tobs():
 	session.close()
 
 	return jsonify(t_list)
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
