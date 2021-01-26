@@ -1,8 +1,3 @@
-# `/api/v1.0/precipitation`
-  # Convert the query results to a dictionary using `date` as the key and `prcp` as the value.
-  # Return the JSON representation of your dictionary.
-# `/api/v1.0/stations`
-  # Return a JSON list of stations from the dataset.
 # `/api/v1.0/tobs`
   # Query the dates and temperature observations of the most active station for the last year of data.
   # Return a JSON list of temperature observations (TOBS) for the previous year.
@@ -65,6 +60,42 @@ def precip():
 	session.close()
 
 	return jsonify(pd_list)
+
+@app.route("/api/v1.0/stations")
+def stations():
+	session = Session(engine)
+
+	stns = {}
+
+	results = session.query(station.station, station.name).all()
+
+	for s_id, name in results:
+		stns[s_id] = name
+
+	session.close()
+
+	return jsonify(stns)
+
+@app.route("/api/v1.0/tobs")
+def tobs():
+	session = Session(engine)
+
+	most_recent = session.query(msmt.date).order_by(msmt.date.desc()).first()
+
+	first_date = (dt.datetime.strptime(most_recent[0],'%Y-%m-%d') - dt.timedelta(days=365)).strftime('%Y-%m-%d')
+
+	results = session.query(msmt.date, msmt.tobs).filter(msmt.date >= first_date).order_by(msmt.date).all()
+
+	t_list = []
+
+	for date, temp in results:
+		t_dict = {}
+		t_dict[date] = temp
+		t_list.append(t_dict)
+
+	session.close()
+
+	return jsonify(t_list)
 
 if __name__ == "__main__":
     app.run(debug=True)
