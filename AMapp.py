@@ -49,6 +49,22 @@ def homepage():
     f"/api/v1.0/<start>/<end><br/>"
     )
 
+@app.route("/api/v1.0/precipitation")
+def precip():
+	session = Session(engine)
+
+	results = session.query(msmt.date, msmt.prcp).order_by(msmt.date).all()
+
+	pd_list = []
+
+	for date, prcp in results:
+		pd_dict = {}
+		pd_dict[date] = prcp
+		pd_list.append(pd_dict)
+
+	session.close()
+
+	return jsonify(pd_list)
 
 if __name__ == "__main__":
     app.run(debug=True)
